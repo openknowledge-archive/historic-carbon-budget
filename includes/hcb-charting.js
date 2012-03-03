@@ -1,5 +1,12 @@
-$(document).ready(function() {
-  chart1 = new Highcharts.Chart({
+var STARTING_YEAR = 1960;
+var MILLISECONDS_IN_A_YEAR = 24 * 3600 * 365.25 * 1000;
+
+function getSeriesData() {
+  return [10, 2, 17, 4, 5, 6, 3, 8, 9, 10];
+}
+
+function plotChart(starting_year, data_array) {
+  return new Highcharts.Chart({
     chart: {
       renderTo: 'chart',
       type: 'spline'
@@ -8,14 +15,12 @@ $(document).ready(function() {
       text: 'Example carbon data'
     },
     xAxis: {
-      // type: 'datetime',
-      // tickPixelInterval: 150,
-      // maxZoom: 20 * 1000
-      categories: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      type: 'datetime',
+      title: {
+        text: null
+      }
     },
     yAxis: {
-      minPadding: 0.2,
-      maxPadding: 0.2,
       title: {
         text: 'CO2/GDP',
         margin: 20
@@ -23,7 +28,13 @@ $(document).ready(function() {
     },
     series: [{
       name: 'Some data',
-      data: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      pointInterval: MILLISECONDS_IN_A_YEAR,
+			pointStart: Date.UTC(starting_year, 0, 01),
+      data: data_array
     }]
   });
+}
+
+$(document).ready(function() {
+  var chart = plotChart(STARTING_YEAR, getSeriesData());
 });
