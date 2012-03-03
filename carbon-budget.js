@@ -46,7 +46,6 @@ function processData(data) {
     var yearString = hit.fields['Year'];
     var year = parseInt(yearString);
     if (year>2008) return;
-    xAxis.push(year);
     var string = hit.fields['CO2 emissions (metric tons per capita)'];
     var n = parseFloat(string || '0');
     if      (hit.fields['Country Code'] == 'WLD') { worldData.push(n); } 
@@ -54,6 +53,10 @@ function processData(data) {
     else if (hit.fields['Country Code'] == 'GBR') { gbrData.push(n); }
     else if (hit.fields['Country Code'] == 'CHN') { chnData.push(n); }
   });
+  for (var n = 0; n < worldData.length; n++) {
+    xAxis.push(1960 + n);
+  }
+
 
   var myChart = new Highcharts.Chart({
     chart: {
