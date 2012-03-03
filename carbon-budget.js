@@ -1,9 +1,30 @@
+
+var spinner = null;
+
 $(function() {
   var url = 'http://thedatahub.org/api/data/f6d76bc5-8354-47ec-b893-48872229bd92/_search?callback=?';
   var size = 10000;
-  var query = "WLD";
+  var query = "WLD,GBR,CHN,USA";
   var sort = "Year";
   var fields = "Country Code,Year,Rural population,Urban population,CO2 emissions (metric tons per capita)";
+
+  var opts = {
+    lines: 12, // The number of lines to draw
+    length: 7, // The length of each line
+    width: 4, // The line thickness
+    radius: 10, // The radius of the inner circle
+    color: '#000', // #rgb or #rrggbb
+    speed: 1, // Rounds per second
+    trail: 60, // Afterglow percentage
+    shadow: false, // Whether to render a shadow
+    hwaccel: false, // Whether to use hardware acceleration
+    className: 'spinner', // The CSS class to assign to the spinner
+    zIndex: 2e9, // The z-index (defaults to 2000000000)
+    top: 'auto', // Top position relative to parent in px
+    left: 'auto' // Left position relative to parent in px
+  };
+  var target = document.getElementById('chart');
+  spinner = new Spinner(opts).spin(target);
 
   $.getJSON(url,{
     size: size,
@@ -11,23 +32,28 @@ $(function() {
     fields: fields,
     sort: sort
   },processData);
+
 });
 
-
 function processData(data) {
+  if (spinner) spinner.stop();
   var xAxis = [];
-  var yAxis = [];
+  var worldData = [];
+  var chnData = [];
+  var gbrData = [];
+  var usaData = [];
   $.each(data.hits.hits, function(index, hit) {
-    console.log(hit.fields['Year'] + ' :: ' + hit.fields['CO2 emissions (metric tons per capita)']);
     var yearString = hit.fields['Year'];
     var year = parseInt(yearString);
     if (year>2008) return;
     xAxis.push(year);
     var string = hit.fields['CO2 emissions (metric tons per capita)'];
     var n = parseFloat(string || '0');
-    yAxis.push(n);
+    if      (hit.fields['Country Code'] == 'WLD') { worldData.push(n); } 
+    else if (hit.fields['Country Code'] == 'USA') { usaData.push(n); }
+    else if (hit.fields['Country Code'] == 'GBR') { gbrData.push(n); }
+    else if (hit.fields['Country Code'] == 'CHN') { chnData.push(n); }
   });
-  console.log(yAxis);
 
   var myChart = new Highcharts.Chart({
     chart: {
@@ -51,10 +77,12 @@ function processData(data) {
         margin: 20
       }
     },
-    series: [{
-      name: 'Some data',
-      data: yAxis
-    }]
+    series: [
+      { name: 'World Average', data: worldData },
+      { name: 'China', data: chnData },
+      { name: 'USA', data: usaData },
+      { name: 'Great Britain', data: gbrData }
+  ]
   });
 }
 
