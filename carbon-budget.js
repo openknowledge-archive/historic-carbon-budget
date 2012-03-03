@@ -4,9 +4,9 @@ var spinner = null;
 $(function() {
   var url = 'http://thedatahub.org/api/data/f6d76bc5-8354-47ec-b893-48872229bd92/_search?callback=?';
   var size = 10000;
-  var query = "WLD,GBR,CHN,USA";
+  var query = "WLD,GBR,CHN,USA,IND";
   var sort = "Year";
-  var fields = "Country Code,Year,Rural population,Urban population,CO2 emissions (metric tons per capita)";
+  var fields = "Country Code,Year,Rural population,Urban population,CO2 emissions (kg per 2000 US$ of GDP)";
 
   var opts = {
     lines: 12, // The number of lines to draw
@@ -42,19 +42,23 @@ function processData(data) {
   var chnData = [];
   var gbrData = [];
   var usaData = [];
+  var indData = [];
+  var minYear = 1971;
   $.each(data.hits.hits, function(index, hit) {
     var yearString = hit.fields['Year'];
     var year = parseInt(yearString);
+    if (year<minYear) return;
     if (year>2008) return;
-    var string = hit.fields['CO2 emissions (metric tons per capita)'];
+    var string = hit.fields['CO2 emissions (kg per 2000 US$ of GDP)'];
     var n = parseFloat(string || '0');
     if      (hit.fields['Country Code'] == 'WLD') { worldData.push(n); } 
     else if (hit.fields['Country Code'] == 'USA') { usaData.push(n); }
     else if (hit.fields['Country Code'] == 'GBR') { gbrData.push(n); }
     else if (hit.fields['Country Code'] == 'CHN') { chnData.push(n); }
+    else if (hit.fields['Country Code'] == 'IND') { indData.push(n); }
   });
   for (var n = 0; n < worldData.length; n++) {
-    xAxis.push(1960 + n);
+    xAxis.push(minYear + n);
   }
 
 
@@ -64,7 +68,7 @@ function processData(data) {
       type: 'spline'
     },
     title: {
-      text: 'CO2 emissions (metric tons per capita)'
+      text: 'CO2 emissions (kg per 2000 US$ of GDP)'
     },
     xAxis: {
       categories: xAxis,
@@ -82,9 +86,10 @@ function processData(data) {
     },
     series: [
       { name: 'World Average', data: worldData },
-      { name: 'China', data: chnData },
       { name: 'USA', data: usaData },
-      { name: 'Great Britain', data: gbrData }
+      { name: 'Great Britain', data: gbrData },
+      { name: 'India', data: indData },
+      { name: 'China', data: chnData }
   ]
   });
 }
