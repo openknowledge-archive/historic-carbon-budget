@@ -1,6 +1,11 @@
 var spinner = null;
 
 $(function() {
+  spinner = createSpinner("chart");
+  getData("WLD,GBR,CHN,USA,IND", processData);
+});
+
+function createSpinner(targetId) {
   var opts = {
     lines: 12, // The number of lines to draw
     length: 7, // The length of each line
@@ -16,11 +21,9 @@ $(function() {
     top: 'auto', // Top position relative to parent in px
     left: 'auto' // Left position relative to parent in px
   };
-  var target = document.getElementById('chart');
-  spinner = new Spinner(opts).spin(target);
-
-  getData("WLD,GBR,CHN,USA,IND", processData);
-});
+  var target = document.getElementById(targetId);
+  return new Spinner(opts).spin(target);
+}
 
 // Note: the countryCodes parameter should be a comma-separated list of country codes
 //  e.g. "WLD,GBR,CHN,USA,IND"
