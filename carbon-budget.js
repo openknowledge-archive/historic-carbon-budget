@@ -1,13 +1,6 @@
-
 var spinner = null;
 
 $(function() {
-  var url = 'http://thedatahub.org/api/data/f6d76bc5-8354-47ec-b893-48872229bd92/_search?callback=?';
-  var size = 10000;
-  var query = "WLD,GBR,CHN,USA,IND";
-  var sort = "Year";
-  var fields = "Country Name,Country Code,Year,Rural population,Urban population,CO2 emissions (kg per 2000 US$ of GDP)";
-
   var opts = {
     lines: 12, // The number of lines to draw
     length: 7, // The length of each line
@@ -26,14 +19,24 @@ $(function() {
   var target = document.getElementById('chart');
   spinner = new Spinner(opts).spin(target);
 
+  getData("WLD,GBR,CHN,USA,IND", processData);
+});
+
+// Note: the countryCodes parameter should be a comma-separated list of country codes
+//  e.g. "WLD,GBR,CHN,USA,IND"
+function getData(countryCodes, successCallback) {
+  var url = 'http://thedatahub.org/api/data/f6d76bc5-8354-47ec-b893-48872229bd92/_search?callback=?';
+  var size = 10000;
+  var sort = "Year";
+  var fields = "Country Name,Country Code,Year,Rural population,Urban population,CO2 emissions (kg per 2000 US$ of GDP)";
+  
   $.getJSON(url,{
     size: size,
-    q: query,
+    q: countryCodes,
     fields: fields,
     sort: sort
-  },processData);
-
-});
+  }, successCallback);
+}
 
 function parseSeries(yData) {
   var series = [];
