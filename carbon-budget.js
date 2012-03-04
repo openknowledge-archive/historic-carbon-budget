@@ -6,7 +6,7 @@ $(function() {
   var size = 10000;
   var query = "WLD,GBR,CHN,USA,IND";
   var sort = "Year";
-  var fields = "Country Code,Year,Rural population,Urban population,CO2 emissions (kg per 2000 US$ of GDP)";
+  var fields = "Country Name,Country Code,Year,Rural population,Urban population,CO2 emissions (kg per 2000 US$ of GDP)";
 
   var opts = {
     lines: 12, // The number of lines to draw
@@ -35,15 +35,21 @@ $(function() {
 
 });
 
+function parseSeries(yData) {
+  var series = [];
+  $.each(yData, function(countryCode, countryData) {
+    series.push({name: countryData.name, data: countryData.values})
+  });
+  return series;
+}
+
 function processData(data) {
   if (spinner) spinner.stop();
   var xAxis = [];
-  var worldData = [];
-  var chnData = [];
-  var gbrData = [];
-  var usaData = [];
-  var indData = [];
   var minYear = 1971;
+  
+  var yData = {};
+  var countryCode = null;
   $.each(data.hits.hits, function(index, hit) {
     var yearString = hit.fields['Year'];
     var year = parseInt(yearString);
@@ -51,17 +57,18 @@ function processData(data) {
     if (year>2008) return;
     var string = hit.fields['CO2 emissions (kg per 2000 US$ of GDP)'];
     var n = parseFloat(string || '0');
-    if      (hit.fields['Country Code'] == 'WLD') { worldData.push(n); } 
-    else if (hit.fields['Country Code'] == 'USA') { usaData.push(n); }
-    else if (hit.fields['Country Code'] == 'GBR') { gbrData.push(n); }
-    else if (hit.fields['Country Code'] == 'CHN') { chnData.push(n); }
-    else if (hit.fields['Country Code'] == 'IND') { indData.push(n); }
+    
+    countryCode = hit.fields['Country Code'];
+    var countryName = hit.fields['Country Name'];
+    if (yData[countryCode] === undefined) {
+      yData[countryCode] = {name: countryName, values: []};
+    }
+    yData[countryCode].values.push(n);
   });
-  for (var n = 0; n < worldData.length; n++) {
+  for (var n = 0; n < yData[countryCode].values.length; n++) {
     xAxis.push(minYear + n);
   }
-
-
+  
   var myChart = new Highcharts.Chart({
     chart: {
       renderTo: 'chart',
@@ -84,13 +91,7 @@ function processData(data) {
         margin: 20
       }
     },
-    series: [
-      { name: 'World Average', data: worldData },
-      { name: 'USA', data: usaData },
-      { name: 'Great Britain', data: gbrData },
-      { name: 'India', data: indData },
-      { name: 'China', data: chnData }
-  ]
+    series: parseSeries(yData)
   });
 }
 
